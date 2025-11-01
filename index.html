@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planner Anual</title>
+    <!-- Estilos internos -->
+    <style>
+        /* ======= ESTILOS GERAIS ======= */
+        :root {
+            --bg-primario: #0f172a;
+            --bg-secundario: #1e293b;
+            --bg-terciario: #0b1120;
+            --texto-principal: #f8fafc;
+            --texto-secundario: #cbd5f5;
+            --destaque: #38bdf8;
+            --destaque-secundario: #60a5fa;
+            --sucesso: #22c55e;
+            --perigo: #ef4444;
+            --sombra: rgba(15, 23, 42, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-terciario);
+            color: var(--texto-principal);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, h4 {
+            margin: 0 0 0.75rem 0;
+            font-weight: 600;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            background: linear-gradient(135deg, var(--destaque), var(--destaque-secundario));
+            color: var(--bg-terciario);
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(56, 189, 248, 0.3);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 8px;
+            padding: 0.6rem 0.8rem;
+            color: var(--texto-principal);
+            font-size: 0.95rem;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: 2px solid var(--destaque);
+        }
+
+        a {
+            color: inherit;
+        }
+
+        .container {
+            width: min(1200px, 95%);
+            margin: 0 auto;
+            padding: 1.5rem 0 3rem;
+        }
+
+        .card {
+            background: var(--bg-secundario);
+            border-radius: 16px;
+            padding: 1.2rem;
+            box-shadow: 0 12px 24px var(--sombra);
+            margin-bottom: 1.5rem;
+        }
+
+        .flex {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .flex-wrap {
+            flex-wrap: wrap;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ======= CABEÇALHO FIXO ======= */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(16px);
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        header .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+        }
+
+        header h1 {
+            font-size: clamp(1.5rem, 2vw + 1rem, 2.5rem);
+        }
+
+        header .search-box {
+            flex: 1;
+            position: relative;
+        }
+
+        header .search-box input {
+            padding-left: 2.5rem;
+        }
+
+        header .search-box span {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--destaque);
+            font-size: 1.1rem;
+        }
+
+        #searchResults {
+            margin-top: 0.5rem;
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 12px;
+            padding: 1rem;
+            display: none;
+            box-shadow: 0 12px 24px var(--sombra);
+        }
+
+        #searchResults ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #searchResults li {
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        #searchResults li:last-child {
+            border-bottom: none;
+        }
+
+        /* ======= VISÃO ANUAL ======= */
+        #visaoAnual {
+            margin-top: 2rem;
+        }
+
+        .mes-card {
+            cursor: pointer;
+            padding: 1rem;
+            transition: transform 0.2s ease, border 0.2s ease;
+            border: 1px solid transparent;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .mes-card:hover {
+            transform: translateY(-6px);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+        }
+
+        .mes-card h3 {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mes-card ol {
+            margin: 0;
+            padding-left: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .mes-card input {
+            background: rgba(8, 47, 73, 0.4);
+        }
+
+        /* ======= PAINEL MENSAL ======= */
+        #painelMensal {
+            margin-top: 2rem;
+        }
+
+        #painelMensal header {
+            position: static;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .calendario {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.75rem;
+        }
+
+        .calendario .dia {
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 12px;
+            min-height: 100px;
+            padding: 0.6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            position: relative;
+        }
+
+        .calendario .dia .add-note {
+            margin-top: auto;
+            font-size: 0.8rem;
+            background: rgba(56, 189, 248, 0.2);
+            color: var(--destaque);
+        }
+
+        .calendario .dia .notas-resumo {
+            font-size: 0.75rem;
+            color: var(--texto-secundario);
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .semana {
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--texto-secundario);
+            font-size: 0.75rem;
+        }
+
+        .lista-itens {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .lista-itens li {
+            background: rgba(15, 23, 42, 0.65);
+            border-radius: 12px;
+            padding: 0.8rem;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .lista-itens li .conteudo {
+            flex: 1;
+        }
+
+        .lista-itens li button {
+            background: rgba(239, 68, 68, 0.18);
+            color: var(--perigo);
+            padding: 0.5rem 0.7rem;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: auto;
+        }
+
+        /* ======= MODAL DE NOTAS DIÁRIAS ======= */
+        #modalNotas {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 1rem;
+        }
+
+        #modalNotas .modal-conteudo {
+            background: var(--bg-secundario);
+            border-radius: 16px;
+            padding: 1.5rem;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.8);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        #modalNotas .nota-item {
+            background: rgba(8, 47, 73, 0.4);
+            padding: 0.7rem;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        #modalNotas .nota-item span {
+            font-size: 0.85rem;
+            color: var(--texto-secundario);
+        }
+
+        /* ======= TAREFAS DE HOJE ======= */
+        #tarefasHoje ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        #tarefasHoje li {
+            padding: 0.7rem;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+        }
+
+        #tarefasHoje li.completed {
+            border-color: rgba(34, 197, 94, 0.5);
+            background: rgba(34, 197, 94, 0.15);
+        }
+
+        #tarefasHoje li span {
+            flex: 1;
+        }
+
+        #tarefasHoje .acoes button {
+            background: rgba(239, 68, 68, 0.18);
+            color: var(--perigo);
+            padding: 0.4rem 0.7rem;
+        }
+
+        /* ======= METAS E PROJETOS ======= */
+        #metasProjetos .metas-lista,
+        #metasProjetos .projetos-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .projeto-card {
+            padding: 1rem;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            display: grid;
+            gap: 0.7rem;
+        }
+
+        /* ======= NOTAS RÁPIDAS ======= */
+        #notasRapidas .notas-salvas {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        #notasRapidas .nota-card {
+            padding: 1rem;
+            border-radius: 12px;
+            background: rgba(8, 47, 73, 0.4);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+        }
+
+        #notasRapidas .nota-card span {
+            display: block;
+            margin-top: 0.75rem;
+            color: var(--texto-secundario);
+            font-size: 0.85rem;
+        }
+
+        /* ======= PROGRESSO ======= */
+        #progresso .barra {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 999px;
+            overflow: hidden;
+            height: 16px;
+            margin-top: 0.5rem;
+        }
+
+        #progresso .barra span {
+            display: block;
+            height: 100%;
+            background: linear-gradient(135deg, var(--sucesso), #4ade80);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        #progresso .indicador {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* ======= RESPONSIVIDADE ======= */
+        @media (max-width: 900px) {
+            .flex.responsive {
+                flex-direction: column;
+            }
+
+            header .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            header .search-box {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .calendario {
+                gap: 0.5rem;
+            }
+
+            .calendario .dia {
+                min-height: 80px;
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ======= CABEÇALHO PRINCIPAL ======= -->
+    <header>
+        <div class="container header-content">
+            <div>
+                <h1 id="tituloAno">Planejamento Anual</h1>
+                <p id="dataHoje">Hoje</p>
+            </div>
+            <div class="search-box">
+                <span>🔍</span>
+                <input type="text" id="campoBusca" placeholder="Busque tarefas, metas ou compromissos" aria-label="Buscar texto no planner">
+                <div id="searchResults" aria-live="polite"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- ======= VISÃO ANUAL ======= -->
+        <section id="visaoAnual" class="card">
+            <h2>Visão Geral do Ano</h2>
+            <p>Confira suas metas principais de cada mês e clique em um mês para abrir o painel detalhado.</p>
+            <div id="gradeMeses" class="grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));"></div>
+        </section>
+
+        <!-- ======= PAINEL MENSAL ======= -->
+        <section id="painelMensal" class="card hidden">
+            <header class="flex responsive" style="align-items: center; justify-content: space-between;">
+                <div>
+                    <h2 id="tituloMes">Painel Mensal</h2>
+                    <p>Organize compromissos, tarefas e anotações do mês selecionado.</p>
+                </div>
+                <button id="btnVoltarMes">⏪ Voltar para visão anual</button>
+            </header>
+
+            <div class="flex responsive" style="margin-top: 2rem; align-items: flex-start;">
+                <div style="flex: 2; min-width: 280px;">
+                    <h3>Calendário do mês</h3>
+                    <div class="calendario" id="calendarioMes"></div>
+                </div>
+                <div style="flex: 1; min-width: 240px; display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div>
+                        <h3>Compromissos do mês ⏰</h3>
+                        <p>Registre eventos importantes e horários.</p>
+                        <form id="formCompromisso" style="display: grid; gap: 0.6rem;">
+                            <input type="text" id="tituloCompromisso" placeholder="Descrição do compromisso" required>
+                            <input type="date" id="dataCompromisso" required>
+                            <input type="time" id="horaCompromisso" required>
+                            <button type="submit">Salvar compromisso</button>
+                        </form>
+                        <ul id="listaCompromissos" class="lista-itens" aria-live="polite"></ul>
+                    </div>
+                    <div>
+                        <h3>Tarefas importantes do mês ✔</h3>
+                        <p>Liste o que não pode ser esquecido.</p>
+                        <form id="formTarefaMensal" style="display: grid; gap: 0.6rem;">
+                            <input type="text" id="descricaoTarefaMensal" placeholder="Nova tarefa essencial" required>
+                            <button type="submit">Adicionar tarefa</button>
+                        </form>
+                        <ul id="listaTarefasMensais" class="lista-itens" aria-live="polite"></ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======= TAREFAS DE HOJE ======= -->
+        <section id="tarefasHoje" class="card">
+            <h2>Tarefas de Hoje</h2>
+            <p>Organize sua rotina diária. Marque ✔ quando concluir e mantenha o foco no presente.</p>
+            <form id="formTarefaHoje" class="flex responsive" style="gap: 0.8rem;">
+                <input type="text" id="descricaoTarefaHoje" placeholder="Adicionar tarefa para hoje" required>
+                <button type="submit">Adicionar tarefa</button>
+            </form>
+            <ul id="listaTarefasHoje"></ul>
+        </section>
+
+        <!-- ======= METAS E PROJETOS ======= -->
+        <section id="metasProjetos" class="card">
+            <h2>Metas e Projetos</h2>
+            <div class="flex responsive" style="align-items: flex-start;">
+                <div style="flex: 1;">
+                    <h3>Metas do Ano ⭐</h3>
+                    <p>Liste grandes conquistas. Marque quando realizar.</p>
+                    <form id="formMetaAnual" style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+                        <input type="text" id="descricaoMetaAnual" placeholder="Adicionar nova meta" required>
+                        <button type="submit">Salvar meta</button>
+                    </form>
+                    <ul id="listaMetasAnuais" class="metas-lista"></ul>
+                </div>
+                <div style="flex: 1;">
+                    <h3>Projetos em andamento 🚀</h3>
+                    <p>Crie projetos com status e prazos.</p>
+                    <form id="formProjeto" style="display: grid; gap: 0.6rem;">
+                        <input type="text" id="nomeProjeto" placeholder="Nome do projeto" required>
+                        <textarea id="descricaoProjeto" rows="2" placeholder="Descrição rápida" required></textarea>
+                        <input type="date" id="prazoProjeto" required>
+                        <select id="statusProjeto">
+                            <option value="Planejando">Planejando</option>
+                            <option value="Em andamento">Em andamento</option>
+                            <option value="Concluído">Concluído</option>
+                        </select>
+                        <button type="submit">Adicionar projeto</button>
+                    </form>
+                    <div id="listaProjetos" class="projetos-lista"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======= NOTAS RÁPIDAS ======= -->
+        <section id="notasRapidas" class="card">
+            <h2>Bloco de Anotações / Ideias</h2>
+            <p>Escreva o que vier à mente. Clique em salvar e acompanhe seu histórico.</p>
+            <textarea id="textoNotaRapida" rows="4" placeholder="Digite aqui sua nota ou ideia"></textarea>
+            <button id="btnSalvarNota">Salvar nota</button>
+            <div class="notas-salvas" id="listaNotasRapidas"></div>
+        </section>
+
+        <!-- ======= RESUMO DO DESEMPENHO ======= -->
+        <section id="progresso" class="card">
+            <h2>Progresso</h2>
+            <p>Acompanhe seus indicadores gerais para manter a motivação.</p>
+            <div>
+                <div class="indicador">
+                    <span>Tarefas concluídas do mês</span>
+                    <strong id="percentualTarefasMes">0%</strong>
+                </div>
+                <div class="barra"><span id="barraTarefasMes"></span></div>
+            </div>
+            <div style="margin-top: 1.2rem;">
+                <div class="indicador">
+                    <span>Metas do ano concluídas</span>
+                    <strong id="percentualMetasAno">0%</strong>
+                </div>
+                <div class="barra"><span id="barraMetasAno"></span></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ======= MODAL DE ANOTAÇÕES DIÁRIAS ======= -->
+    <div id="modalNotas" class="hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+        <div class="modal-conteudo">
+            <div class="flex" style="justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 id="modalTitulo">Notas do dia</h3>
+                    <p id="modalSubtitulo"></p>
+                </div>
+                <button id="btnFecharModal" style="background: rgba(239, 68, 68, 0.2); color: var(--perigo);">✖ Fechar</button>
+            </div>
+            <form id="formNotaDia" style="display: grid; gap: 0.6rem;">
+                <textarea id="textoNotaDia" rows="3" placeholder="Escreva a anotação para este dia" required></textarea>
+                <input type="time" id="horaNotaDia" required>
+                <button type="submit">Adicionar anotação</button>
+            </form>
+            <div id="listaNotasDia" style="display: flex; flex-direction: column; gap: 0.6rem;"></div>
+        </div>
+    </div>
+
+    <!-- ======= SCRIPTS INTERNOS ======= -->
+    <script>
+        // ======= CONSTANTES E VARIÁVEIS GLOBAIS =======
+        const mesesNomes = [
+            "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+        ];
+        const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+        const hoje = new Date();
+        const anoAtual = hoje.getFullYear();
+        let dados = {};
+        let mesSelecionado = hoje.getMonth();
+        const chaveLocalStorage = `plannerAnual_${anoAtual}`;
+
+        // ======= FUNÇÕES DE SUPORTE AO LOCALSTORAGE =======
+        function carregarDados() {
+            const armazenado = localStorage.getItem(chaveLocalStorage);
+            if (armazenado) {
+                try {
+                    dados = JSON.parse(armazenado);
+                } catch (error) {
+                    console.error("Erro ao parsear dados, reiniciando estrutura", error);
+                    dados = {};
+                }
+            }
+            if (!dados || typeof dados !== "object") {
+                dados = {};
+            }
+            inicializarEstrutura();
+            salvarDados();
+        }
+
+        function salvarDados() {
+            localStorage.setItem(chaveLocalStorage, JSON.stringify(dados));
+        }
+
+        function inicializarEstrutura() {
+            if (!dados.ano) dados.ano = anoAtual;
+            if (!dados.meses) dados.meses = {};
+            for (let i = 0; i < 12; i++) {
+                if (!dados.meses[i]) {
+                    dados.meses[i] = {
+                        metas: ["", "", ""],
+                        compromissos: [],
+                        tarefas: [],
+                        notasCalendario: {}
+                    };
+                } else {
+                    // Garante que a estrutura mínima exista
+                    if (!Array.isArray(dados.meses[i].metas)) dados.meses[i].metas = ["", "", ""];
+                    if (!Array.isArray(dados.meses[i].compromissos)) dados.meses[i].compromissos = [];
+                    if (!Array.isArray(dados.meses[i].tarefas)) dados.meses[i].tarefas = [];
+                    if (!dados.meses[i].notasCalendario || typeof dados.meses[i].notasCalendario !== "object") {
+                        dados.meses[i].notasCalendario = {};
+                    }
+                }
+            }
+            if (!dados.tarefasDiarias) dados.tarefasDiarias = {};
+            if (!dados.metasAnuais) dados.metasAnuais = [];
+            if (!dados.projetos) dados.projetos = [];
+            if (!dados.notasRapidas) dados.notasRapidas = [];
+        }
+
+        // ======= FUNÇÕES DE RENDERIZAÇÃO =======
+        function renderAno() {
+            const gradeMeses = document.getElementById("gradeMeses");
+            gradeMeses.innerHTML = "";
+            dados.meses && Object.keys(dados.meses).forEach(indice => {
+                const mesIndice = parseInt(indice, 10);
+                const mes = dados.meses[mesIndice];
+                const card = document.createElement("div");
+                card.className = "card mes-card";
+                card.innerHTML = `
+                    <h3>${mesesNomes[mesIndice]} <span>➡</span></h3>
+                    <p style="margin:0; font-size:0.9rem; color: var(--texto-secundario);">Principais metas deste mês:</p>
+                    <ol>
+                        ${mes.metas.map((meta, idx) => `
+                            <li>
+                                <input type="text" data-mes="${mesIndice}" data-index="${idx}" value="${meta || ""}" placeholder="Meta ${idx + 1}" />
+                            </li>
+                        `).join("")}
+                    </ol>
+                    <small style="color: var(--texto-secundario);">Clique no card para abrir o painel mensal.</small>
+                `;
+                card.addEventListener("click", (evento) => {
+                    if (evento.target.tagName.toLowerCase() === "input") return; // Evita abrir ao editar metas
+                    abrirPainelMensal(mesIndice);
+                });
+                // Escuta mudanças nas metas diretamente no card
+                card.querySelectorAll("input").forEach(input => {
+                    input.addEventListener("input", (e) => {
+                        const mesId = parseInt(e.target.dataset.mes, 10);
+                        const idx = parseInt(e.target.dataset.index, 10);
+                        dados.meses[mesId].metas[idx] = e.target.value;
+                        salvarDados();
+                    });
+                });
+                gradeMeses.appendChild(card);
+            });
+        }
+
+        function abrirPainelMensal(indice) {
+            mesSelecionado = indice;
+            document.getElementById("painelMensal").classList.remove("hidden");
+            document.getElementById("tituloMes").textContent = `Painel de ${mesesNomes[indice]}`;
+            document.getElementById("tituloMes").dataset.mes = indice;
+            renderCalendario(indice);
+            renderCompromissos(indice);
+            renderTarefasMensais(indice);
+            atualizarDashboardProgresso();
+            window.scrollTo({ top: document.getElementById("painelMensal").offsetTop - 100, behavior: "smooth" });
+        }
+
+        function renderCalendario(indiceMes) {
+            const calendario = document.getElementById("calendarioMes");
+            calendario.innerHTML = "";
+            const primeiroDia = new Date(anoAtual, indiceMes, 1);
+            const ultimoDia = new Date(anoAtual, indiceMes + 1, 0);
+            const inicioSemana = primeiroDia.getDay();
+            const totalDias = ultimoDia.getDate();
+
+            // Renderiza cabeçalho dos dias da semana
+            diasSemana.forEach(dia => {
+                const cabecalho = document.createElement("div");
+                cabecalho.className = "semana";
+                cabecalho.textContent = dia;
+                calendario.appendChild(cabecalho);
+            });
+
+            // Espaços vazios antes do primeiro dia
+            for (let i = 0; i < inicioSemana; i++) {
+                const vazio = document.createElement("div");
+                calendario.appendChild(vazio);
+            }
+
+            for (let dia = 1; dia <= totalDias; dia++) {
+                const dataCompleta = `${anoAtual}-${String(indiceMes + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+                const notasDoDia = dados.meses[indiceMes].notasCalendario[dataCompleta] || [];
+                const celula = document.createElement("div");
+                celula.className = "dia";
+                celula.innerHTML = `
+                    <strong>${dia}</strong>
+                    <div class="notas-resumo">
+                        ${notasDoDia.slice(0, 2).map(nota => `<span>⏰ ${nota.hora} - ${nota.texto}</span>`).join("")}
+                        ${notasDoDia.length > 2 ? `<span>+${notasDoDia.length - 2} anotações</span>` : ""}
+                    </div>
+                    <button class="add-note">➕ Anotar</button>
+                `;
+                celula.querySelector(".add-note").addEventListener("click", () => abrirModalDia(indiceMes, dataCompleta));
+                calendario.appendChild(celula);
+            }
+        }
+
+        function renderCompromissos(indiceMes) {
+            const lista = document.getElementById("listaCompromissos");
+            lista.innerHTML = "";
+            const compromissos = dados.meses[indiceMes].compromissos.sort((a, b) => new Date(a.data + "T" + a.hora) - new Date(b.data + "T" + b.hora));
+            compromissos.forEach((item, idx) => {
+                const li = document.createElement("li");
+                li.innerHTML = `
+                    <div class="conteudo">
+                        <strong>${new Date(item.data + "T00:00").toLocaleDateString('pt-BR')} às ${item.hora}</strong>
+                        <p style="margin:0.2rem 0 0; color: var(--texto-secundario);">${item.titulo}</p>
+                    </div>
+                    <button aria-label="Remover compromisso">✖</button>
+                `;
+                li.querySelector("button").addEventListener("click", () => {
+                    dados.meses[indiceMes].compromissos.splice(idx, 1);
+                    salvarCompromissoMensal();
+                    renderCompromissos(indiceMes);
+                    atualizarDashboardProgresso();
+                });
+                lista.appendChild(li);
+            });
+        }
+
+        function renderTarefasMensais(indiceMes) {
+            const lista = document.getElementById("listaTarefasMensais");
+            lista.innerHTML = "";
+            dados.meses[indiceMes].tarefas.forEach((tarefa, idx) => {
+                const li = document.createElement("li");
+                li.innerHTML = `
+                    <label class="checkbox-label">
+                        <input type="checkbox" ${tarefa.concluida ? "checked" : ""}>
+                        <span style="text-decoration:${tarefa.concluida ? 'line-through' : 'none'}; color:${tarefa.concluida ? 'var(--texto-secundario)' : 'inherit'}">${tarefa.descricao}</span>
+                    </label>
+                    <button aria-label="Remover tarefa">✖</button>
+                `;
+                li.querySelector("input").addEventListener("change", (e) => {
+                    dados.meses[indiceMes].tarefas[idx].concluida = e.target.checked;
+                    salvarCompromissoMensal();
+                    renderTarefasMensais(indiceMes);
+                    atualizarDashboardProgresso();
+                });
+                li.querySelector("button").addEventListener("click", () => {
+                    dados.meses[indiceMes].tarefas.splice(idx, 1);
+                    salvarCompromissoMensal();
+                    renderTarefasMensais(indiceMes);
+                    atualizarDashboardProgresso();
+                });
+                lista.appendChild(li);
+            });
+        }
+
+        function renderTarefasHoje() {
+            const lista = document.getElementById("listaTarefasHoje");
+            lista.innerHTML = "";
+            const chaveHoje = formatarDataISO(new Date());
+            if (!dados.tarefasDiarias[chaveHoje]) {
+                dados.tarefasDiarias[chaveHoje] = [];
+            }
+            dados.tarefasDiarias[chaveHoje].forEach((tarefa, idx) => {
+                const li = document.createElement("li");
+                li.classList.toggle("completed", tarefa.concluida);
+                li.innerHTML = `
+                    <label class="checkbox-label" style="flex:1;">
+                        <input type="checkbox" ${tarefa.concluida ? "checked" : ""}>
+                        <span>${tarefa.descricao}</span>
+                    </label>
+                    <div class="acoes">
+                        <button aria-label="Remover tarefa">✖</button>
+                    </div>
+                `;
+                li.querySelector("input").addEventListener("change", (e) => {
+                    dados.tarefasDiarias[chaveHoje][idx].concluida = e.target.checked;
+                    salvarTarefaDiaria();
+                    renderTarefasHoje();
+                    atualizarDashboardProgresso();
+                });
+                li.querySelector("button").addEventListener("click", () => {
+                    dados.tarefasDiarias[chaveHoje].splice(idx, 1);
+                    salvarTarefaDiaria();
+                    renderTarefasHoje();
+                    atualizarDashboardProgresso();
+                });
+                lista.appendChild(li);
+            });
+        }
+
+        function renderMetasAnuais() {
+            const lista = document.getElementById("listaMetasAnuais");
+            lista.innerHTML = "";
+            dados.metasAnuais.forEach((meta, idx) => {
+                const li = document.createElement("li");
+                li.className = "lista-itens";
+                li.innerHTML = `
+                    <div class="lista-itens" style="background:none; border:none; padding:0;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" ${meta.concluida ? "checked" : ""}>
+                            <span style="text-decoration:${meta.concluida ? 'line-through' : 'none'}; color:${meta.concluida ? 'var(--texto-secundario)' : 'inherit'}">${meta.descricao}</span>
+                        </label>
+                    </div>
+                    <button aria-label="Remover meta">✖</button>
+                `;
+                li.querySelector("input").addEventListener("change", (e) => {
+                    dados.metasAnuais[idx].concluida = e.target.checked;
+                    salvarDados();
+                    renderMetasAnuais();
+                    atualizarDashboardProgresso();
+                });
+                li.querySelector("button").addEventListener("click", () => {
+                    dados.metasAnuais.splice(idx, 1);
+                    salvarDados();
+                    renderMetasAnuais();
+                    atualizarDashboardProgresso();
+                });
+                lista.appendChild(li);
+            });
+        }
+
+        function renderProjetos() {
+            const container = document.getElementById("listaProjetos");
+            container.innerHTML = "";
+            dados.projetos.forEach((projeto, idx) => {
+                const div = document.createElement("div");
+                div.className = "projeto-card";
+                div.innerHTML = `
+                    <strong>${projeto.nome}</strong>
+                    <p style="margin:0; color: var(--texto-secundario);">${projeto.descricao}</p>
+                    <span style="font-size:0.85rem; color: var(--texto-secundario);">Prazo: ${new Date(projeto.prazo + "T00:00").toLocaleDateString('pt-BR')}</span>
+                    <label>Status:
+                        <select data-index="${idx}">
+                            <option value="Planejando" ${projeto.status === "Planejando" ? "selected" : ""}>Planejando</option>
+                            <option value="Em andamento" ${projeto.status === "Em andamento" ? "selected" : ""}>Em andamento</option>
+                            <option value="Concluído" ${projeto.status === "Concluído" ? "selected" : ""}>Concluído</option>
+                        </select>
+                    </label>
+                    <button data-remover="${idx}">✖ Remover</button>
+                `;
+                div.querySelector("select").addEventListener("change", (e) => {
+                    const id = parseInt(e.target.dataset.index, 10);
+                    dados.projetos[id].status = e.target.value;
+                    salvarDados();
+                    atualizarDashboardProgresso();
+                });
+                div.querySelector("button").addEventListener("click", (e) => {
+                    const id = parseInt(e.target.dataset.remover, 10);
+                    dados.projetos.splice(id, 1);
+                    salvarDados();
+                    renderProjetos();
+                });
+                container.appendChild(div);
+            });
+        }
+
+        function renderNotasRapidas() {
+            const container = document.getElementById("listaNotasRapidas");
+            container.innerHTML = "";
+            if (!dados.notasRapidas.length) {
+                const vazio = document.createElement("p");
+                vazio.style.color = "var(--texto-secundario)";
+                vazio.textContent = "Nenhuma nota salva ainda. Use o campo acima para registrar ideias.";
+                container.appendChild(vazio);
+                return;
+            }
+            dados.notasRapidas.slice().reverse().forEach((nota, idx) => {
+                const realIndex = dados.notasRapidas.length - 1 - idx;
+                const card = document.createElement("div");
+                card.className = "nota-card";
+                card.innerHTML = `
+                    <p style="margin:0; white-space: pre-wrap;">${nota.texto}</p>
+                    <span>Criada em ${new Date(nota.data).toLocaleString('pt-BR')}</span>
+                    <button data-index="${realIndex}" style="margin-top:0.6rem; background: rgba(239, 68, 68, 0.18); color: var(--perigo);">✖ Apagar</button>
+                `;
+                card.querySelector("button").addEventListener("click", (e) => {
+                    const id = parseInt(e.target.dataset.index, 10);
+                    dados.notasRapidas.splice(id, 1);
+                    salvarNotasRapidas();
+                    renderNotasRapidas();
+                });
+                container.appendChild(card);
+            });
+        }
+
+        // ======= FUNÇÕES DE SALVAMENTO =======
+        function salvarTarefaDiaria() {
+            salvarDados();
+        }
+
+        function salvarCompromissoMensal() {
+            salvarDados();
+        }
+
+        function salvarNotasRapidas() {
+            salvarDados();
+        }
+
+        // ======= MODAL DE ANOTAÇÕES POR DIA =======
+        function abrirModalDia(indiceMes, dataISO) {
+            const modal = document.getElementById("modalNotas");
+            modal.classList.remove("hidden");
+            modal.dataset.mes = indiceMes;
+            modal.dataset.data = dataISO;
+            const dataFormatada = new Date(dataISO + "T00:00").toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+            document.getElementById("modalTitulo").textContent = `Notas de ${mesesNomes[indiceMes]}`;
+            document.getElementById("modalSubtitulo").textContent = dataFormatada;
+            document.getElementById("textoNotaDia").value = "";
+            document.getElementById("horaNotaDia").value = "";
+            renderNotasDoDia(indiceMes, dataISO);
+        }
+
+        function fecharModalDia() {
+            document.getElementById("modalNotas").classList.add("hidden");
+        }
+
+        function renderNotasDoDia(indiceMes, dataISO) {
+            const container = document.getElementById("listaNotasDia");
+            container.innerHTML = "";
+            const notas = dados.meses[indiceMes].notasCalendario[dataISO] || [];
+            if (!notas.length) {
+                const vazio = document.createElement("p");
+                vazio.style.color = "var(--texto-secundario)";
+                vazio.textContent = "Sem anotações para este dia. Utilize o formulário acima.";
+                container.appendChild(vazio);
+                return;
+            }
+            notas.forEach((nota, idx) => {
+                const item = document.createElement("div");
+                item.className = "nota-item";
+                item.innerHTML = `
+                    <div>
+                        <strong>${nota.hora}</strong>
+                        <p style="margin:0.2rem 0 0;">${nota.texto}</p>
+                    </div>
+                    <button data-index="${idx}" style="background: rgba(239, 68, 68, 0.18); color: var(--perigo);">✖</button>
+                `;
+                item.querySelector("button").addEventListener("click", (e) => {
+                    const id = parseInt(e.target.dataset.index, 10);
+                    dados.meses[indiceMes].notasCalendario[dataISO].splice(id, 1);
+                    salvarDados();
+                    renderNotasDoDia(indiceMes, dataISO);
+                    renderCalendario(indiceMes);
+                });
+                container.appendChild(item);
+            });
+        }
+
+        function adicionarNotaDia(evento) {
+            evento.preventDefault();
+            const modal = document.getElementById("modalNotas");
+            const indiceMes = parseInt(modal.dataset.mes, 10);
+            const dataISO = modal.dataset.data;
+            const texto = document.getElementById("textoNotaDia").value.trim();
+            const hora = document.getElementById("horaNotaDia").value;
+            if (!texto || !hora) return;
+            if (!dados.meses[indiceMes].notasCalendario[dataISO]) {
+                dados.meses[indiceMes].notasCalendario[dataISO] = [];
+            }
+            dados.meses[indiceMes].notasCalendario[dataISO].push({ texto, hora });
+            salvarDados();
+            document.getElementById("textoNotaDia").value = "";
+            document.getElementById("horaNotaDia").value = "";
+            renderNotasDoDia(indiceMes, dataISO);
+            renderCalendario(indiceMes);
+        }
+
+        // ======= PROGRESSO =======
+        function atualizarDashboardProgresso() {
+            const barraTarefas = document.getElementById("barraTarefasMes");
+            const textoTarefas = document.getElementById("percentualTarefasMes");
+            const barraMetas = document.getElementById("barraMetasAno");
+            const textoMetas = document.getElementById("percentualMetasAno");
+            const indiceMes = typeof mesSelecionado === "number" ? mesSelecionado : hoje.getMonth();
+            const tarefas = dados.meses[indiceMes].tarefas;
+            const totalTarefas = tarefas.length;
+            const concluidas = tarefas.filter(t => t.concluida).length;
+            const percentualTarefas = totalTarefas > 0 ? Math.round((concluidas / totalTarefas) * 100) : 0;
+            barraTarefas.style.width = `${percentualTarefas}%`;
+            textoTarefas.textContent = `${percentualTarefas}%`;
+
+            const metas = dados.metasAnuais;
+            const totalMetas = metas.length;
+            const metasConcluidas = metas.filter(meta => meta.concluida).length;
+            const percentualMetas = totalMetas > 0 ? Math.round((metasConcluidas / totalMetas) * 100) : 0;
+            barraMetas.style.width = `${percentualMetas}%`;
+            textoMetas.textContent = `${metasConcluidas}/${totalMetas} (${percentualMetas}%)`;
+        }
+
+        // ======= BUSCA RÁPIDA =======
+        function executarBusca(termo) {
+            const resultados = document.getElementById("searchResults");
+            if (!termo) {
+                resultados.style.display = "none";
+                resultados.innerHTML = "";
+                return;
+            }
+            termo = termo.toLowerCase();
+            const itens = [];
+
+            // Busca em metas mensais
+            mesesNomes.forEach((nome, indice) => {
+                dados.meses[indice].metas.forEach((meta, idx) => {
+                    if (meta && meta.toLowerCase().includes(termo)) {
+                        itens.push(`Meta mensal ${idx + 1} de ${nome}: ${meta}`);
+                    }
+                });
+            });
+            // Compromissos
+            mesesNomes.forEach((nome, indice) => {
+                dados.meses[indice].compromissos.forEach(comp => {
+                    if (comp.titulo.toLowerCase().includes(termo)) {
+                        itens.push(`Compromisso em ${nome} (${new Date(comp.data + 'T00:00').toLocaleDateString('pt-BR')} às ${comp.hora}): ${comp.titulo}`);
+                    }
+                });
+            });
+            // Tarefas mensais
+            mesesNomes.forEach((nome, indice) => {
+                dados.meses[indice].tarefas.forEach(tarefa => {
+                    if (tarefa.descricao.toLowerCase().includes(termo)) {
+                        itens.push(`Tarefa de ${nome}: ${tarefa.descricao}`);
+                    }
+                });
+            });
+            // Tarefas diárias (somente do dia)
+            const chaveHoje = formatarDataISO(new Date());
+            if (dados.tarefasDiarias[chaveHoje]) {
+                dados.tarefasDiarias[chaveHoje].forEach(tarefa => {
+                    if (tarefa.descricao.toLowerCase().includes(termo)) {
+                        itens.push(`Tarefa de hoje: ${tarefa.descricao}`);
+                    }
+                });
+            }
+            // Metas anuais
+            dados.metasAnuais.forEach(meta => {
+                if (meta.descricao.toLowerCase().includes(termo)) {
+                    itens.push(`Meta anual: ${meta.descricao}`);
+                }
+            });
+            // Projetos
+            dados.projetos.forEach(projeto => {
+                if (projeto.nome.toLowerCase().includes(termo) || projeto.descricao.toLowerCase().includes(termo)) {
+                    itens.push(`Projeto (${projeto.status}): ${projeto.nome}`);
+                }
+            });
+            // Notas rápidas
+            dados.notasRapidas.forEach(nota => {
+                if (nota.texto.toLowerCase().includes(termo)) {
+                    itens.push(`Nota rápida: ${nota.texto.substring(0, 60)}${nota.texto.length > 60 ? '...' : ''}`);
+                }
+            });
+
+            if (!itens.length) {
+                resultados.innerHTML = "<p>Nada encontrado. Tente outro termo.</p>";
+            } else {
+                resultados.innerHTML = `<ul>${itens.map(item => `<li>${item}</li>`).join("")}</ul>`;
+            }
+            resultados.style.display = "block";
+        }
+
+        // ======= UTILITÁRIOS =======
+        function formatarDataISO(data) {
+            return data.toISOString().split("T")[0];
+        }
+
+        function atualizarCabecalho() {
+            document.getElementById("tituloAno").textContent = `Planejamento ${anoAtual}`;
+            const opcoes = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById("dataHoje").textContent = new Date().toLocaleDateString('pt-BR', opcoes);
+        }
+
+        function configurarEventos() {
+            document.getElementById("btnVoltarMes").addEventListener("click", () => {
+                document.getElementById("painelMensal").classList.add("hidden");
+                mesSelecionado = hoje.getMonth();
+                atualizarDashboardProgresso();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+
+            document.getElementById("formCompromisso").addEventListener("submit", (e) => {
+                e.preventDefault();
+                const titulo = document.getElementById("tituloCompromisso").value.trim();
+                const data = document.getElementById("dataCompromisso").value;
+                const hora = document.getElementById("horaCompromisso").value;
+                if (!titulo || !data || !hora) return;
+                dados.meses[mesSelecionado].compromissos.push({ titulo, data, hora });
+                salvarCompromissoMensal();
+                renderCompromissos(mesSelecionado);
+                e.target.reset();
+            });
+
+            document.getElementById("formTarefaMensal").addEventListener("submit", (e) => {
+                e.preventDefault();
+                const descricao = document.getElementById("descricaoTarefaMensal").value.trim();
+                if (!descricao) return;
+                dados.meses[mesSelecionado].tarefas.push({ descricao, concluida: false });
+                salvarCompromissoMensal();
+                renderTarefasMensais(mesSelecionado);
+                e.target.reset();
+                atualizarDashboardProgresso();
+            });
+
+            document.getElementById("formTarefaHoje").addEventListener("submit", (e) => {
+                e.preventDefault();
+                const descricao = document.getElementById("descricaoTarefaHoje").value.trim();
+                if (!descricao) return;
+                const chaveHoje = formatarDataISO(new Date());
+                if (!Array.isArray(dados.tarefasDiarias[chaveHoje])) {
+                    dados.tarefasDiarias[chaveHoje] = [];
+                }
+                dados.tarefasDiarias[chaveHoje].push({ descricao, concluida: false });
+                salvarTarefaDiaria();
+                renderTarefasHoje();
+                e.target.reset();
+                atualizarDashboardProgresso();
+            });
+
+            document.getElementById("formMetaAnual").addEventListener("submit", (e) => {
+                e.preventDefault();
+                const descricao = document.getElementById("descricaoMetaAnual").value.trim();
+                if (!descricao) return;
+                dados.metasAnuais.push({ descricao, concluida: false });
+                salvarDados();
+                renderMetasAnuais();
+                e.target.reset();
+                atualizarDashboardProgresso();
+            });
+
+            document.getElementById("formProjeto").addEventListener("submit", (e) => {
+                e.preventDefault();
+                const nome = document.getElementById("nomeProjeto").value.trim();
+                const descricao = document.getElementById("descricaoProjeto").value.trim();
+                const prazo = document.getElementById("prazoProjeto").value;
+                const status = document.getElementById("statusProjeto").value;
+                if (!nome || !descricao || !prazo) return;
+                dados.projetos.push({ nome, descricao, prazo, status });
+                salvarDados();
+                renderProjetos();
+                e.target.reset();
+            });
+
+            document.getElementById("btnSalvarNota").addEventListener("click", () => {
+                const texto = document.getElementById("textoNotaRapida").value.trim();
+                if (!texto) return;
+                dados.notasRapidas.push({ texto, data: new Date().toISOString() });
+                document.getElementById("textoNotaRapida").value = "";
+                salvarNotasRapidas();
+                renderNotasRapidas();
+            });
+
+            document.getElementById("btnFecharModal").addEventListener("click", fecharModalDia);
+            document.getElementById("modalNotas").addEventListener("click", (e) => {
+                if (e.target.id === "modalNotas") fecharModalDia();
+            });
+            document.getElementById("formNotaDia").addEventListener("submit", adicionarNotaDia);
+
+            document.getElementById("campoBusca").addEventListener("input", (e) => executarBusca(e.target.value));
+        }
+
+        // ======= INICIALIZAÇÃO =======
+        function iniciarPlanner() {
+            carregarDados();
+            atualizarCabecalho();
+            configurarEventos();
+            renderAno();
+            renderTarefasHoje();
+            renderMetasAnuais();
+            renderProjetos();
+            renderNotasRapidas();
+            atualizarDashboardProgresso();
+        }
+
+        document.addEventListener("DOMContentLoaded", iniciarPlanner);
+    </script>
+</body>
+</html>
